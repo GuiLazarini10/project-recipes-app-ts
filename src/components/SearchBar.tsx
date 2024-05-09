@@ -5,42 +5,66 @@ interface Meal {
   strMeal: string;
 }
 
+interface Drink {
+  idDrink: string;
+  strDrink: string;
+}
+
+interface ApiSearchResponse {
+  meals?: Meal[];
+  drinks?: Drink[];
+}
+
 function SearchBar() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchOption, setSearchOption] = useState('ingredient');
-  const [searchResults, setSearchResults] = useState<Meal[]>([]);
+  const [searchOption, setSearchOption] = useState<'ingredient'
+  | 'name' | 'first-letter'>('ingredient');
+  const [searchResults, setSearchResults] = useState<(Meal | Drink)[]>([]);
+
+  // Definindo constantes para os URLs das APIs de comidas e bebidas
+  const MEALS_API_URL = 'https://www.themealdb.com/api/json/v1/1';
+  const DRINKS_API_URL = 'https://www.thecocktaildb.com/api/json/v1/1';
 
   const handleSearchOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchOption(event.target.value);
+    setSearchOption(event.target.value as 'ingredient' | 'name' | 'first-letter');
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     let searchUrl = '';
-    switch (searchOption) {
-      case 'ingredient':
-        searchUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${searchTerm}`;
-        break;
-      case 'name':
-        searchUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${searchTerm}`;
-        break;
-      case 'first-letter':
-        if (searchTerm.length !== 1) {
-          alert('Your search must have only 1 (one) character');
-          return;
-        }
-        searchUrl = `https://www.themealdb.com/api/json/v1/1/search.php?f=${searchTerm}`;
-        break;
-      default:
-        break;
+
+    // Determinando o URL correto com base na opção de busca e na página atual
+    if (window.location.pathname === '/drinks') {
+      searchUrl = buildSearchUrl(searchOption, searchTerm, DRINKS_API_URL);
+    } else {
+      searchUrl = buildSearchUrl(searchOption, searchTerm, MEALS_API_URL);
     }
 
     // Chamada para a API
-    fetch(searchUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        setSearchResults(data.meals || []);
-      })
-      .catch((error) => console.error('Error fetching data:', error));
+    try {
+      const response = await fetch(searchUrl);
+      const data: ApiSearchResponse = await response.json();
+      setSearchResults(data.meals || data.drinks || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  // Função para construir o URL de busca com base na opção selecionada
+  const buildSearchUrl = (option: string, term: string, apiUrl: string): string => {
+    switch (option) {
+      case 'ingredient':
+        return `${apiUrl}/filter.php?i=${term}`;
+      case 'name':
+        return `${apiUrl}/search.php?s=${term}`;
+      case 'first-letter':
+        if (term.length !== 1) {
+          alert('Your search must have only 1 (one) character');
+          return '';
+        }
+        return `${apiUrl}/search.php?f=${term}`;
+      default:
+        return '';
+    }
   };
 
   return (
@@ -86,7 +110,9 @@ function SearchBar() {
 
       <ul>
         {searchResults.map((result) => (
-          <li key={ result.idMeal }>{result.strMeal}</li>
+          <li key={ 'idMeal' in result ? result.idMeal : result.idDrink }>
+            {'strMeal' in result ? (result as Meal).strMeal : (result as Drink).strDrink}
+          </li>
         ))}
       </ul>
     </div>
