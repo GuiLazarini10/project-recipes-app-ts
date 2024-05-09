@@ -9,6 +9,7 @@ import Profile from './Pages/Profile';
 import DoneRecipes from './Pages/DoneRecipes';
 import FavoriteRecipes from './Pages/FavoriteRecipes';
 import Login from './Pages/Login';
+import Footer from './components/Footer';
 
 function App() {
   return (
@@ -50,6 +51,8 @@ function App() {
                   </> }
       />
     </Routes>
+      <Footer />
+    </>
   );
 }
 
