@@ -5,6 +5,7 @@ import SearchIcon from '../images/searchIcon.svg';
 
 function Header() {
   const [pageTitle, setPageTitle] = useState('');
+  const [showSearchBar, setShowSearchBar] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -16,29 +17,25 @@ function Header() {
       '/done-recipes': 'Done Recipes',
       '/favorite-recipes': 'Favorite Recipes',
     };
-
-    // Verifica se a chave da localização atual está presente no titleMap antes de acessá-la
-    if (titleMap[location.pathname]) {
-      setPageTitle(titleMap[location.pathname]);
-    } else {
-      // Define o título como vazio se a chave não existir
-      setPageTitle('');
-    }
+    setPageTitle(titleMap[location.pathname] || '');
   }, [location]);
+
+  const handleSearchClick = () => {
+    setShowSearchBar(!showSearchBar);
+  };
 
   return (
     <header>
       <button onClick={ () => navigate('/profile') }>
         <img src={ ProfileIcon } alt="Profile" data-testid="profile-top-btn" />
       </button>
-      {(location.pathname === '/meals' || location.pathname === '/drinks') && (
-        <button>
-          <img
-            src={ SearchIcon }
-            alt="Search"
-            data-testid="search-top-btn"
-          />
+      {location.pathname === '/meals' || location.pathname === '/drinks' ? (
+        <button onClick={ handleSearchClick }>
+          <img src={ SearchIcon } alt="Search" data-testid="search-top-btn" />
         </button>
+      ) : null}
+      {showSearchBar && (
+        <input type="text" data-testid="search-input" />
       )}
       <h1 data-testid="page-title">{pageTitle}</h1>
     </header>
