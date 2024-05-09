@@ -13,47 +13,42 @@ import Footer from './components/Footer';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={ <Login /> } />
+    <><Routes>
+      <Route path="/" element={<Login />} />
       <Route
         path="/meals/*"
-        element={ <>
+        element={<>
           <Header />
           <Meals />
-                  </> }
-      />
+        </>} />
       <Route
         path="/drinks/*"
-        element={ <>
+        element={<>
           <Header />
           <Drinks />
-                  </> }
-      />
+        </>} />
       <Route
         path="/profile"
-        element={ <>
+        element={<>
           <Header />
           <Profile />
-                  </> }
-      />
+        </>} />
       <Route
         path="/done-recipes"
-        element={ <>
+        element={<>
           <Header />
           <DoneRecipes />
-                  </> }
-      />
+        </>} />
       <Route
         path="/favorite-recipes"
-        element={ <>
+        element={<>
           <Header />
           <FavoriteRecipes />
-                  </> }
-      />
-    </Routes>
-      <Footer />
+        </>} />
+    </Routes><Footer />
     </>
   );
 }
 
 export default App;
+
