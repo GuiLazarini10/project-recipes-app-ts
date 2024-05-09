@@ -3,7 +3,7 @@ import React from 'react';
 function Drinks() {
   return (
     <div>
-      <h2>Drinks Page</h2>
+      <h1>Drinks</h1>
       {/* Conteúdo da página */}
     </div>
   );

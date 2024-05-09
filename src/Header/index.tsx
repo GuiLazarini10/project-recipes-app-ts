@@ -1,42 +1,46 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProfileIcon from '../images/profileIcon.svg';
 import SearchIcon from '../images/searchIcon.svg';
 
 function Header() {
+  const [pageTitle, setPageTitle] = useState('');
   const location = useLocation();
-  const { pathname } = location;
+  const navigate = useNavigate();
 
-  const getTitle = () => {
-    switch (pathname) {
-      case '/meals':
-        return 'Meals';
-      case '/drinks':
-        return 'Drinks';
-      case '/profile':
-        return 'Profile';
-      case '/done-recipes':
-        return 'Done Recipes';
-      case '/favorite-recipes':
-        return 'Favorite Recipes';
-      default:
-        return '';
+  useEffect(() => {
+    const titleMap: Record<string, string> = {
+      '/meals': 'Meals',
+      '/drinks': 'Drinks',
+      '/profile': 'Profile',
+      '/done-recipes': 'Done Recipes',
+      '/favorite-recipes': 'Favorite Recipes',
+    };
+
+    // Verifica se a chave da localização atual está presente no titleMap antes de acessá-la
+    if (titleMap[location.pathname]) {
+      setPageTitle(titleMap[location.pathname]);
+    } else {
+      // Define o título como vazio se a chave não existir
+      setPageTitle('');
     }
-  };
-
-  const showSearchIcon = ['/meals', '/drinks'].includes(pathname);
+  }, [location]);
 
   return (
     <header>
-      <div>
+      <button onClick={ () => navigate('/profile') }>
         <img src={ ProfileIcon } alt="Profile" data-testid="profile-top-btn" />
-        {showSearchIcon && <img
-          src={ SearchIcon }
-          alt="Search"
-          data-testid="search-top-btn"
-        />}
-      </div>
-      <h1 data-testid="page-title">{getTitle()}</h1>
+      </button>
+      {(location.pathname === '/meals' || location.pathname === '/drinks') && (
+        <button>
+          <img
+            src={ SearchIcon }
+            alt="Search"
+            data-testid="search-top-btn"
+          />
+        </button>
+      )}
+      <h1 data-testid="page-title">{pageTitle}</h1>
     </header>
   );
 }

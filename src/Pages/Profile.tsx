@@ -3,7 +3,7 @@ import React from 'react';
 function Profile() {
   return (
     <div>
-      <h2>Profile Page</h2>
+      <h1>Profile</h1>
       {/* Conteúdo da página */}
     </div>
   );

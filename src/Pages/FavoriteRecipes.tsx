@@ -3,7 +3,7 @@ import React from 'react';
 function FavoriteRecipes() {
   return (
     <div>
-      <h2>Favorite Recipes Page</h2>
+      <h1>Favorite Recipes</h1>
       {/* Conteúdo da página */}
     </div>
   );
