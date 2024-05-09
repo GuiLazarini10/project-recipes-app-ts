@@ -41,4 +41,5 @@ describe('Footer Component', () => {
     const mealsButton = screen.getByTestId('meals-bottom-btn');
     userEvent.click(mealsButton);
   });
+
 });
