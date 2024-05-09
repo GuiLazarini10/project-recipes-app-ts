@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface Meal {
   idMeal: string;
@@ -20,10 +21,7 @@ function SearchBar() {
   const [searchOption, setSearchOption] = useState<'ingredient'
   | 'name' | 'first-letter'>('ingredient');
   const [searchResults, setSearchResults] = useState<(Meal | Drink)[]>([]);
-
-  // Definindo constantes para os URLs das APIs de comidas e bebidas
-  const MEALS_API_URL = 'https://www.themealdb.com/api/json/v1/1';
-  const DRINKS_API_URL = 'https://www.thecocktaildb.com/api/json/v1/1';
+  const navigate = useNavigate();
 
   const handleSearchOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchOption(event.target.value as 'ingredient' | 'name' | 'first-letter');
@@ -32,11 +30,11 @@ function SearchBar() {
   const handleSearch = async () => {
     let searchUrl = '';
 
-    // Determinando o URL correto com base na opção de busca e na página atual
+    // Definindo o URL correto com base na opção de busca e na página atual
     if (window.location.pathname === '/drinks') {
-      searchUrl = buildSearchUrl(searchOption, searchTerm, DRINKS_API_URL);
+      searchUrl = buildSearchUrl(searchOption, searchTerm, 'https://www.thecocktaildb.com/api/json/v1/1');
     } else {
-      searchUrl = buildSearchUrl(searchOption, searchTerm, MEALS_API_URL);
+      searchUrl = buildSearchUrl(searchOption, searchTerm, 'https://www.themealdb.com/api/json/v1/1');
     }
 
     // Chamada para a API
@@ -44,6 +42,14 @@ function SearchBar() {
       const response = await fetch(searchUrl);
       const data: ApiSearchResponse = await response.json();
       setSearchResults(data.meals || data.drinks || []);
+
+      // Redirecionar para a tela de detalhes se apenas um resultado for encontrado
+      if ((data.meals?.length === 1 && !data.drinks)
+        || (data.drinks?.length === 1 && !data.meals)) {
+        const id = data.meals ? data.meals[0].idMeal : data.drinks![0].idDrink;
+        const type = data.meals ? 'meals' : 'drinks';
+        navigate(`/${type}/${id}`);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
