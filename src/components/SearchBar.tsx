@@ -23,6 +23,10 @@ function SearchBar() {
   const [searchResults, setSearchResults] = useState<(Meal | Drink)[]>([]);
   const navigate = useNavigate();
 
+  // Definindo constantes para os URLs das APIs de comidas e bebidas
+  const MEALS_API_URL = 'https://www.themealdb.com/api/json/v1/1';
+  const DRINKS_API_URL = 'https://www.thecocktaildb.com/api/json/v1/1';
+
   const handleSearchOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchOption(event.target.value as 'ingredient' | 'name' | 'first-letter');
   };
@@ -30,26 +34,35 @@ function SearchBar() {
   const handleSearch = async () => {
     let searchUrl = '';
 
-    // Definindo o URL correto com base na opção de busca e na página atual
+    // Determinando o URL correto com base na opção de busca e na página atual
     if (window.location.pathname === '/drinks') {
-      searchUrl = buildSearchUrl(searchOption, searchTerm, 'https://www.thecocktaildb.com/api/json/v1/1');
+      searchUrl = buildSearchUrl(searchOption, searchTerm, DRINKS_API_URL);
     } else {
-      searchUrl = buildSearchUrl(searchOption, searchTerm, 'https://www.themealdb.com/api/json/v1/1');
+      searchUrl = buildSearchUrl(searchOption, searchTerm, MEALS_API_URL);
     }
 
     // Chamada para a API
     try {
       const response = await fetch(searchUrl);
       const data: ApiSearchResponse = await response.json();
-      setSearchResults(data.meals || data.drinks || []);
+      const results = data.meals || data.drinks || [];
 
-      // Redirecionar para a tela de detalhes se apenas um resultado for encontrado
-      if ((data.meals?.length === 1 && !data.drinks)
-        || (data.drinks?.length === 1 && !data.meals)) {
-        const id = data.meals ? data.meals[0].idMeal : data.drinks![0].idDrink;
-        const type = data.meals ? 'meals' : 'drinks';
-        navigate(`/${type}/${id}`);
+      // Exibe o alerta se nenhum resultado for encontrado
+      if (results.length === 0) {
+        window.alert("Sorry, we haven't found any recipes for these filters");
       }
+
+      // Redireciona para a tela de detalhes se apenas uma receita for encontrada
+      if (results.length === 1) {
+        const id = 'idMeal' in results[0] ? results[0].idMeal : results[0].idDrink;
+        if (window.location.pathname === '/drinks') {
+          navigate(`/drinks/${id}`);
+        } else {
+          navigate(`/meals/${id}`);
+        }
+      }
+
+      setSearchResults(results);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
