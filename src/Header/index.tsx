@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProfileIcon from '../images/profileIcon.svg';
 import SearchIcon from '../images/searchIcon.svg';
+import SearchBar from '../components/SearchBar';
 
 function Header() {
   const [pageTitle, setPageTitle] = useState('');
@@ -10,7 +11,7 @@ function Header() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const titleMap: Record<string, string> = {
+    const titleMap: { [key: string]: string } = {
       '/meals': 'Meals',
       '/drinks': 'Drinks',
       '/profile': 'Profile',
@@ -34,9 +35,7 @@ function Header() {
           <img src={ SearchIcon } alt="Search" data-testid="search-top-btn" />
         </button>
       ) : null}
-      {showSearchBar && (
-        <input type="text" data-testid="search-input" />
-      )}
+      {showSearchBar && <SearchBar />}
       <h1 data-testid="page-title">{pageTitle}</h1>
     </header>
   );
