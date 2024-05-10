@@ -4,14 +4,13 @@ type ActionType = {
   type: string,
   payload: string,
 };
-export const INITIAL_STATE = {
-  object: '',
-};
 
-function mealReducer(state = INITIAL_STATE, action:ActionType) {
+export const INITIAL_STATE = '';
+
+function mealReducer(state = INITIAL_STATE, action: ActionType) {
   switch (action.type) {
     case NEW_MEAL:
-      return { ...state, object: action.payload };
+      return action.payload;
     default:
       return state;
   }
