@@ -10,6 +10,8 @@ import DoneRecipes from './Pages/DoneRecipes';
 import FavoriteRecipes from './Pages/FavoriteRecipes';
 import Login from './Pages/Login';
 import Footer from './components/Footer';
+import MealDetails from './Pages/MealsDetails';
+import DrinkDetails from './Pages/DrinkDetails';
 
 function App() {
   return (
@@ -17,22 +19,40 @@ function App() {
       <Routes>
         <Route path="/" element={ <Login /> } />
         <Route
-          path="/meals/*"
+          path="/meals"
           element={
             <>
               <Header />
               <Meals />
             </>
-}
+          }
         />
         <Route
-          path="/drinks/*"
+          path="/meals/:id"
+          element={
+            <>
+              <Header />
+              <MealDetails />
+            </>
+          }
+        />
+        <Route
+          path="/drinks/:id"
+          element={
+            <>
+              <Header />
+              <DrinkDetails />
+            </>
+          }
+        />
+        <Route
+          path="/drinks"
           element={
             <>
               <Header />
               <Drinks />
             </>
-}
+          }
         />
         <Route
           path="/profile"
@@ -41,7 +61,7 @@ function App() {
               <Header />
               <Profile />
             </>
-}
+          }
         />
         <Route
           path="/done-recipes"
@@ -50,7 +70,7 @@ function App() {
               <Header />
               <DoneRecipes />
             </>
-}
+          }
         />
         <Route
           path="/favorite-recipes"
@@ -59,7 +79,7 @@ function App() {
               <Header />
               <FavoriteRecipes />
             </>
-}
+          }
         />
       </Routes>
       <Footer />
