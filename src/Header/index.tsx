@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import ProfileIcon from '../images/profileIcon.svg';
 import SearchIcon from '../images/searchIcon.svg';
 import SearchBar from '../components/SearchBar';
@@ -8,10 +8,9 @@ function Header() {
   const [pageTitle, setPageTitle] = useState('');
   const [showSearchBar, setShowSearchBar] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const titleMap: { [key: string]: string } = {
+    const titleMap: Record<string, string> = {
       '/meals': 'Meals',
       '/drinks': 'Drinks',
       '/profile': 'Profile',
@@ -27,9 +26,9 @@ function Header() {
 
   return (
     <header>
-      <button onClick={ () => navigate('/profile') }>
+      <Link to="/profile">
         <img src={ ProfileIcon } alt="Profile" data-testid="profile-top-btn" />
-      </button>
+      </Link>
       {location.pathname === '/meals' || location.pathname === '/drinks' ? (
         <button onClick={ handleSearchClick }>
           <img src={ SearchIcon } alt="Search" data-testid="search-top-btn" />

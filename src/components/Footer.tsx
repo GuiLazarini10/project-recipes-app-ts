@@ -1,4 +1,3 @@
-import React from 'react';
 import drinkIcon from '../images/drinkIcon.svg';
 import mealIcon from '../images/mealIcon.svg';
 
