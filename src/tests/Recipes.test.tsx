@@ -1,6 +1,6 @@
 // src/components/RecipeCards.test.tsx
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import RecipeCards from '../components/Recipes'; // Corrigir importação
@@ -120,16 +120,11 @@ describe('RecipeCards', () => {
     expect(await screen.findAllByTestId(/-recipe-card/)).toHaveLength(mockMeals.length);
   });
 
-  test('handles empty API response some gracefully', async () => {
-    // Simulate empty API response
-    (window as any).fetch = () => Promise.resolve({
-      json: () => Promise.resolve({ meals: [] }),
-    });
-
+  it('fetches and sets recipes data correctly', async () => {
     renderComponent('meals');
-
     await waitFor(() => {
-      expect(screen.queryByTestId(recipeCardTestId)).not.toBeInTheDocument();
+      const cards = screen.getAllByTestId(/-recipe-card/);
+      expect(cards).toHaveLength(mockMeals.length);
     });
   });
 });

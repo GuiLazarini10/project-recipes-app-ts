@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 interface Recipe {
   idMeal?: string;
@@ -17,7 +17,6 @@ interface RecipeCardsProps {
 
 function RecipeCards({ type, category = '' }: RecipeCardsProps): JSX.Element {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -35,14 +34,6 @@ function RecipeCards({ type, category = '' }: RecipeCardsProps): JSX.Element {
     fetchRecipes();
   }, [type, category]);
 
-  const handleKeyDown = (event:
-  React.KeyboardEvent<HTMLDivElement>, id: string | undefined) => {
-    // Combina as condições em um único `if`
-    if ((event.key === 'Enter' || event.key === ' ') && id) {
-      navigate(`/${type}/${id}`);
-    }
-  };
-
   return (
     <div
       style={ {
@@ -57,7 +48,8 @@ function RecipeCards({ type, category = '' }: RecipeCardsProps): JSX.Element {
         const isLongName = name.length > 20;
         const id = recipe.idMeal || recipe.idDrink;
         return (
-          <div
+          <Link
+            to={ `/${type}/${id}` }
             key={ id }
             data-testid={ `${index}-recipe-card` }
             style={ {
@@ -71,11 +63,11 @@ function RecipeCards({ type, category = '' }: RecipeCardsProps): JSX.Element {
               boxShadow: '0 2px 4px rgba(0,0,0,0.25)',
               boxSizing: 'border-box',
               cursor: 'pointer',
+              textDecoration: 'none',
+              color: 'inherit',
             } }
             role="button"
             tabIndex={ 0 }
-            onClick={ () => id && navigate(`/${type}/${id}`) }
-            onKeyDown={ (event) => id && handleKeyDown(event, id) }
           >
             <img
               src={ recipe.strMealThumb || recipe.strDrinkThumb }
@@ -100,7 +92,7 @@ function RecipeCards({ type, category = '' }: RecipeCardsProps): JSX.Element {
             >
               {recipe.strMeal || recipe.strDrink}
             </h3>
-          </div>
+          </Link>
         );
       })}
     </div>
