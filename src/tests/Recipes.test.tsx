@@ -120,7 +120,7 @@ describe('RecipeCards', () => {
     expect(await screen.findAllByTestId(/-recipe-card/)).toHaveLength(mockMeals.length);
   });
 
-  test('handles empty API response gracefully', async () => {
+  test('handles empty API response some gracefully', async () => {
     // Simulate empty API response
     (window as any).fetch = () => Promise.resolve({
       json: () => Promise.resolve({ meals: [] }),
