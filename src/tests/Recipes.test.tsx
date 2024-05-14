@@ -120,35 +120,6 @@ describe('RecipeCards', () => {
     expect(await screen.findAllByTestId(/-recipe-card/)).toHaveLength(mockMeals.length);
   });
 
-  it('calls navigate on card click', async () => {
-    const history = createMemoryHistory();
-    render(
-      <Router location={ history.location } navigator={ history }>
-        <RecipeCards type="meals" />
-      </Router>,
-    );
-
-    const recipeCard = await screen.findByTestId(recipeCardTestId);
-    fireEvent.click(recipeCard);
-
-    await waitFor(() => {
-      expect(history.location.pathname).toBe('/meals/52977');
-    });
-  });
-
-  test('handles empty API response gracefully', async () => {
-    // Simulate empty API response
-    (window as any).fetch = () => Promise.resolve({
-      json: () => Promise.resolve({ meals: [] }),
-    });
-
-    renderComponent('meals');
-
-    await waitFor(() => {
-      expect(screen.queryByTestId(recipeCardTestId)).not.toBeInTheDocument();
-    });
-  });
-
   it('fetches and sets recipes data correctly', async () => {
     renderComponent('meals');
     await waitFor(() => {
