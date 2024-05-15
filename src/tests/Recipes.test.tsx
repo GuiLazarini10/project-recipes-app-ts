@@ -1,6 +1,6 @@
 // src/components/RecipeCards.test.tsx
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import RecipeCards from '../components/Recipes'; // Corrigir importação
@@ -126,5 +126,40 @@ describe('RecipeCards', () => {
       const cards = screen.getAllByTestId(/-recipe-card/);
       expect(cards).toHaveLength(mockMeals.length);
     });
+  });
+
+  // Armazena a implementação original para restauração posterior
+  const originalFetch = global.fetch;
+  const originalError = console.error;
+
+  // Função para mockar o fetch que falha
+  const mockFetchError = () => {
+    global.fetch = () => Promise.reject(new Error('Failed to fetch'));
+  };
+
+  // Função para restaurar os mocks
+  const restoreMocks = () => {
+    global.fetch = originalFetch;
+    console.error = originalError;
+  };
+
+  afterEach(() => {
+    // Restaura as funções originais após cada teste
+    restoreMocks();
+  });
+
+  it('deve registrar um erro quando o fetch falhar', async () => {
+    // Mockando o console.error manualmente
+    let errorMessage = '';
+    console.error = (message) => { errorMessage = message; };
+
+    // Mockando fetch para simular um erro
+    mockFetchError();
+
+    // Renderiza o componente com o tipo 'meals'
+    render(<RecipeCards type="meals" />);
+
+    // Aguarda a execução assíncrona
+    await waitFor(() => expect(errorMessage).toContain('Failed to fetch recipes:'));
   });
 });
