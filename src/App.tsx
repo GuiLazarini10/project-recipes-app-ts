@@ -12,6 +12,7 @@ import Login from './Pages/Login';
 import Footer from './components/Footer';
 import MealDetails from './Pages/MealsDetails';
 import DrinkDetails from './Pages/DrinkDetails';
+import RecipeInProgress from './Pages/RecipeInProgress';
 
 function App() {
   return (
@@ -36,6 +37,8 @@ function App() {
             </>
           }
         />
+        <Route path="/meals/:id/in-progress" element={ <RecipeInProgress /> } />
+        {' '}
         <Route
           path="/drinks/:id"
           element={
@@ -45,6 +48,8 @@ function App() {
             </>
           }
         />
+        <Route path="/drinks/:id/in-progress" element={ <RecipeInProgress /> } />
+        {' '}
         <Route
           path="/drinks"
           element={
