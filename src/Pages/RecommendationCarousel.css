@@ -4,7 +4,7 @@
   flex-direction: row;
 }
 
-.prev,
+.prev
 .next {
   background-color: white;
   border: none;
@@ -51,6 +51,6 @@
   visibility: visible;
 }
 
-.item:not(.visible) {
+.item:not( .visible ) {
   visibility: hidden;
 }
