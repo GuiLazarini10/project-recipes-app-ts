@@ -1,58 +1,57 @@
-/* RecommendationCarousel.css */
 .main-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-  }
-  
-  .prev,
-  .next {
-    width: 50px;
-    background-color: #fcfcfc;
-    border: none;
-    cursor: pointer;
-    font-size: 24px;
-    padding: 10px;
-  }
-  
-  .carousel {
-    flex-grow: 1;
-    background-color: #fbfbfb;
-    overflow-x: scroll;
-    white-space: nowrap;
-    padding: 10px;
-    scroll-behavior: smooth;
-  }
-  
-  .item {
-    display: inline-block;
-    width: calc(50% - 10px); /* Exibe dois cards por vez */
-    margin-right: 10px;
-    box-sizing: border-box;
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 4px;
-    box-shadow: 0 3px 1px -2px rgb(0 0 0 / 20%), 0 2px 2px 0 rgb(0 0 0 / 14%), 0 1px 5px 0 rgb(0 0 0 / 12%);
-    text-align: center;
-  }
-  
-  .item img {
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
-  }
-  
-  .item p {
-    margin-top: 10px;
-    font-size: 16px;
-    font-weight: bold;
-  }
-  
-  .item.visible {
-    visibility: visible;
-  }
-  
-  .item:not(.visible) {
-    visibility: hidden;
-  }
-  
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.prev,
+.next {
+  width: 50px;
+  background-color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  padding: 10px;
+}
+
+.carousel {
+  flex-grow: 1;
+  background-color: white;
+  overflow-x: scroll;
+  white-space: nowrap;
+  padding: 10px;
+  scroll-behavior: smooth;
+}
+
+.item {
+  display: inline-block;
+  width: calc(50% - 10px); /* Exibe dois cards por vez */
+  margin-right: 10px;
+  box-sizing: border-box;
+  background-color: white;
+  padding: 15px;
+  border-radius: 4px;
+  box-shadow: 0 3px 1px -2px rgb(0 0 0 / 20%), 0 2px 2px 0 rgb(0 0 0 / 14%),
+    0 1px 5px 0 rgb(0 0 0 / 12%);
+  text-align: center;
+}
+
+.item img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.item p {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.item.visible {
+  visibility: visible;
+}
+
+.item:not(.visible) {
+  visibility: hidden;
+}
