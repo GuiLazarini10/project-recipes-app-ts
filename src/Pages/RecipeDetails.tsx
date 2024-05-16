@@ -28,7 +28,7 @@ interface FavoriteRecipe {
   name: string;
   image: string;
 }
-
+//
 function DrinkDetails() {
   const { id } = useParams<{ id?: string }>();
   const location = useLocation();
