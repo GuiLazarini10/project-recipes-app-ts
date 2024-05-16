@@ -18,6 +18,7 @@ function RecipeInProgress() {
   const { id } = useParams<{ id: string }>();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [isMeal, setIsMeal] = useState<boolean>(true);
+  const [checkedIngredients, setCheckedIngredients] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -34,6 +35,12 @@ function RecipeInProgress() {
 
     fetchRecipe();
   }, [id]);
+
+  const handleCheck = (ingredient: string) => {
+    setCheckedIngredients((prev) => (prev.includes(ingredient)
+      ? prev.filter((item) => item !== ingredient)
+      : [...prev, ingredient]));
+  };
 
   if (!recipe) return <div>Loading...</div>;
 
@@ -55,11 +62,18 @@ function RecipeInProgress() {
         {Object.keys(recipe)
           .filter((key) => key.includes('strIngredient') && recipe[key])
           .map((key, index) => (
-            <li key={ index } data-testid={ `${index}-ingredient-name-and-measure` }>
-              {recipe[key]}
-              {' '}
-              -
-              {recipe[`strMeasure${index + 1}`]}
+            <li key={ index } data-testid={ `${index}-ingredient-step` }>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={ checkedIngredients.includes(recipe[key]) }
+                  onChange={ () => handleCheck(recipe[key]) }
+                />
+                {recipe[key]}
+                {' '}
+                -
+                {recipe[`strMeasure${index + 1}`]}
+              </label>
             </li>
           ))}
       </ul>
