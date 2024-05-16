@@ -4,8 +4,7 @@
   flex-direction: row;
 }
 
-.prev
-.next {
+.prev, .next {
   background-color: white;
   border: none;
   cursor: pointer;
