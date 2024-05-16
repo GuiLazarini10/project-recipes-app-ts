@@ -31,15 +31,42 @@ function RecipeInProgress() {
       const data = await response.json();
       setRecipe(type === 'meals' ? data.meals[0] : data.drinks[0]);
       setIsMeal(type === 'meals');
+
+      // Load checked ingredients from localStorage
+      const inProgressRecipes = JSON.parse(localStorage
+        .getItem('inProgressRecipes') || '{}');
+      const savedCheckedIngredients = inProgressRecipes[type]?.[id || ''] || [];
+      setCheckedIngredients(savedCheckedIngredients);
     };
 
     fetchRecipe();
   }, [id]);
 
   const handleCheck = (ingredient: string) => {
-    setCheckedIngredients((prev) => (prev.includes(ingredient)
-      ? prev.filter((item) => item !== ingredient)
-      : [...prev, ingredient]));
+    const updatedCheckedIngredients = checkedIngredients.includes(ingredient)
+      ? checkedIngredients.filter((item) => item !== ingredient)
+      : [...checkedIngredients, ingredient];
+
+    setCheckedIngredients(updatedCheckedIngredients);
+
+    // Save checked ingredients to localStorage
+    const type = isMeal ? 'meals' : 'drinks';
+    const inProgressRecipes = JSON.parse(localStorage
+      .getItem('inProgressRecipes') || '{}');
+    if (id) {
+      localStorage.setItem(
+        'inProgressRecipes',
+        JSON.stringify({
+          ...inProgressRecipes,
+          [type]: {
+            ...inProgressRecipes[type],
+            [id]: updatedCheckedIngredients,
+          },
+        }),
+      );
+    } else {
+      throw new Error('ID is undefined');
+    }
   };
 
   if (!recipe) return <div>Loading...</div>;
@@ -62,7 +89,15 @@ function RecipeInProgress() {
         {Object.keys(recipe)
           .filter((key) => key.includes('strIngredient') && recipe[key])
           .map((key, index) => (
-            <li key={ index } data-testid={ `${index}-ingredient-step` }>
+            <li
+              key={ index }
+              data-testid={ `${index}-ingredient-step` }
+              style={ {
+                textDecoration: checkedIngredients.includes(recipe[key])
+                  ? 'line-through solid rgb(0, 0, 0)'
+                  : 'none',
+              } }
+            >
               <label>
                 <input
                   type="checkbox"
