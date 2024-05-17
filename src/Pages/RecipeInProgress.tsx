@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import blackHeartIcon from '../images/blackHeartIcon.svg';
+import whiteHeartIcon from '../images/whiteHeartIcon.svg';
+import shareIcon from '../images/shareIcon.svg';
 
 interface Recipe {
   idMeal?: string;
@@ -19,6 +22,8 @@ function RecipeInProgress() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [isMeal, setIsMeal] = useState<boolean>(true);
   const [checkedIngredients, setCheckedIngredients] = useState<string[]>([]);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [copyMessage, setCopyMessage] = useState<string>('');
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -37,6 +42,11 @@ function RecipeInProgress() {
         .getItem('inProgressRecipes') || '{}');
       const savedCheckedIngredients = inProgressRecipes[type]?.[id || ''] || [];
       setCheckedIngredients(savedCheckedIngredients);
+
+      // Load favorite state from localStorage
+      const favoriteRecipes = JSON.parse(localStorage.getItem('favoriteRecipes') || '[]');
+      const isFavoriteRecipe = favoriteRecipes.some((fav: any) => fav.id === id);
+      setIsFavorite(isFavoriteRecipe);
     };
 
     fetchRecipe();
@@ -69,6 +79,39 @@ function RecipeInProgress() {
     }
   };
 
+  const handleShare = () => {
+    const url = window.location.href.replace('/in-progress', '');
+    navigator.clipboard.writeText(url);
+    setCopyMessage('Link copied!');
+    setTimeout(() => setCopyMessage(''), 3000); // Clear message after 3 seconds
+  };
+
+  const handleFavorite = () => {
+    const favoriteRecipes = JSON.parse(localStorage.getItem('favoriteRecipes') || '[]');
+    const newFavoriteRecipe = {
+      id,
+      type: isMeal ? 'meal' : 'drink',
+      nationality: isMeal ? recipe?.strArea || '' : '',
+      category: recipe?.strCategory || '',
+      alcoholicOrNot: isMeal ? '' : recipe?.strAlcoholic || '',
+      name: isMeal ? recipe?.strMeal : recipe?.strDrink,
+      image: isMeal ? recipe?.strMealThumb : recipe?.strDrinkThumb,
+    };
+
+    if (isFavorite) {
+      const updatedFavorites = favoriteRecipes.filter((fav: any) => fav.id !== id);
+      localStorage.setItem('favoriteRecipes', JSON.stringify(updatedFavorites));
+    } else {
+      favoriteRecipes.push(newFavoriteRecipe);
+      localStorage.setItem('favoriteRecipes', JSON.stringify(favoriteRecipes));
+    }
+    setIsFavorite(!isFavorite);
+  };
+
+  const allIngredientsChecked = Object.keys(recipe || {})
+    .filter((key) => key.includes('strIngredient') && recipe?.[key])
+    .every((ingredient) => checkedIngredients.includes(recipe?.[ingredient]));
+
   if (!recipe) return <div>Loading...</div>;
 
   return (
@@ -79,8 +122,13 @@ function RecipeInProgress() {
         data-testid="recipe-photo"
       />
       <h1 data-testid="recipe-title">{isMeal ? recipe.strMeal : recipe.strDrink}</h1>
-      <button data-testid="share-btn">Share</button>
-      <button data-testid="favorite-btn">Favorite</button>
+      <button data-testid="share-btn" onClick={ handleShare }>
+        <img src={ shareIcon } alt="Share" />
+      </button>
+      {copyMessage && <span>{copyMessage}</span>}
+      <button data-testid="favorite-btn" onClick={ handleFavorite }>
+        <img src={ isFavorite ? blackHeartIcon : whiteHeartIcon } alt="Favorite Icon" />
+      </button>
       <p data-testid="recipe-category">
         {isMeal ? recipe.strCategory : recipe.strAlcoholic}
       </p>
@@ -113,7 +161,22 @@ function RecipeInProgress() {
           ))}
       </ul>
       <p data-testid="instructions">{recipe.strInstructions}</p>
-      <button data-testid="finish-recipe-btn">Finish Recipe</button>
+      <button
+        data-testid="finish-recipe-btn"
+        disabled={ !allIngredientsChecked }
+        style={ {
+          position: 'fixed',
+          bottom: '0',
+          width: '100%',
+          backgroundColor: '#4CAF50',
+          color: 'white',
+          padding: '15px 0',
+          border: 'none',
+          textAlign: 'center',
+        } }
+      >
+        Finish Recipe
+      </button>
     </div>
   );
 }
