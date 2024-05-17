@@ -73,21 +73,21 @@ function DoneRecipes() {
               src={ recipe.image }
               alt={ recipe.name }
               data-testid={ `${index}-horizontal-image` }
-
             />
             <p data-testid={ `${index}-horizontal-top-text` }>
-              {recipe.nationality ? `${recipe.nationality} - ${recipe
-                .category}` : recipe.category}
+              {recipe.nationality ? `${recipe
+                .nationality} - ${recipe.category}` : recipe.category}
             </p>
             <p data-testid={ `${index}-horizontal-name` }>{recipe.name}</p>
             <p data-testid={ `${index}-horizontal-done-date` }>{recipe.doneDate}</p>
-            <button
+            <input
+              type="image"
+              src={ shareIcon }
+              alt="Compartilhar"
               data-testid={ `${index}-horizontal-share-btn` }
               onClick={ () => handleShare(recipe.id) }
-            >
-              <img src={ shareIcon } alt="Share" />
-            </button>
-            {recipe.tags.map((tag) => (
+            />
+            {recipe.tags.slice(0, 2).map((tag) => (
               <span key={ tag } data-testid={ `${index}-${tag}-horizontal-tag` }>
                 {tag}
               </span>
