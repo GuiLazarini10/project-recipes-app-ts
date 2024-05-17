@@ -16,6 +16,23 @@ interface ApiSearchResponse {
   drinks?: Drink[];
 }
 
+export const buildSearchUrl = (option: string, term: string, apiUrl: string): string => {
+  switch (option) {
+    case 'ingredient':
+      return `${apiUrl}/filter.php?i=${term}`;
+    case 'name':
+      return `${apiUrl}/search.php?s=${term}`;
+    case 'first-letter':
+      if (term.length !== 1) {
+        alert('Your search must have only 1 (one) character');
+        return '';
+      }
+      return `${apiUrl}/search.php?f=${term}`;
+    default:
+      return '';
+  }
+};
+
 function SearchBar() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchOption, setSearchOption] = useState<'ingredient'
@@ -69,22 +86,6 @@ function SearchBar() {
   };
 
   // Função para construir o URL de busca com base na opção selecionada
-  const buildSearchUrl = (option: string, term: string, apiUrl: string): string => {
-    switch (option) {
-      case 'ingredient':
-        return `${apiUrl}/filter.php?i=${term}`;
-      case 'name':
-        return `${apiUrl}/search.php?s=${term}`;
-      case 'first-letter':
-        if (term.length !== 1) {
-          alert('Your search must have only 1 (one) character');
-          return '';
-        }
-        return `${apiUrl}/search.php?f=${term}`;
-      default:
-        return '';
-    }
-  };
 
   return (
     <div>
