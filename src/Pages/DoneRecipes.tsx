@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import shareIcon from '../images/shareIcon.svg';
 
 interface DoneRecipe {
@@ -67,17 +68,20 @@ function DoneRecipes() {
       <div>
         {filteredRecipes.map((recipe, index) => (
           <div key={ recipe.id }>
-            <img
-              src={ recipe.image }
-              alt={ recipe.name }
-              data-testid={ `${index}-horizontal-image` }
-            />
+            <Link to={ `/${recipe.type === 'meal' ? 'meals' : 'drinks'}/${recipe.id}` }>
+              <img
+                src={ recipe.image }
+                alt={ recipe.name }
+                data-testid={ `${index}-horizontal-image` }
+                width={ 100 }
+              />
+              <p data-testid={ `${index}-horizontal-name` }>{recipe.name}</p>
+            </Link>
             <p data-testid={ `${index}-horizontal-top-text` }>
               {recipe.type === 'meal'
                 ? `${recipe.nationality} - ${recipe.category}`
                 : recipe.alcoholicOrNot}
             </p>
-            <p data-testid={ `${index}-horizontal-name` }>{recipe.name}</p>
             <p data-testid={ `${index}-horizontal-done-date` }>{recipe.doneDate}</p>
             <input
               type="image"

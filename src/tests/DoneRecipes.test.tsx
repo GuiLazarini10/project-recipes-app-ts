@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import DoneRecipes from '../Pages/DoneRecipes';
 
@@ -27,6 +27,9 @@ const doneRecipes = [
   },
 ];
 
+const horizontalname0 = '0-horizontal-name';
+const horizontalname1 = '1-horizontal-name';
+
 describe('DoneRecipes Page', () => {
   beforeEach(() => {
     localStorage.setItem('doneRecipes', JSON.stringify(doneRecipes));
@@ -34,6 +37,26 @@ describe('DoneRecipes Page', () => {
 
   afterEach(() => {
     localStorage.clear();
+  });
+
+  test('renders done recipes with correct details for meals', () => {
+    render(
+      <MemoryRouter>
+        <DoneRecipes />
+      </MemoryRouter>,
+    );
+
+    const mealImage = screen.getByTestId('0-horizontal-image');
+    const mealTopText = screen.getByTestId('0-horizontal-top-text');
+    const mealName = screen.getByTestId(horizontalname0);
+    const doneDate = screen.getByTestId('0-horizontal-done-date');
+    const shareButton = screen.getByTestId('0-horizontal-share-btn');
+
+    expect(mealImage).toHaveAttribute('src', doneRecipes[0].image);
+    expect(mealTopText).toHaveTextContent(`${doneRecipes[0].nationality} - ${doneRecipes[0].category}`);
+    expect(mealName).toHaveTextContent(doneRecipes[0].name);
+    expect(doneDate).toHaveTextContent(doneRecipes[0].doneDate);
+    expect(shareButton).toBeInTheDocument();
   });
 
   test('renders done recipes with correct details for drinks', () => {
@@ -45,7 +68,7 @@ describe('DoneRecipes Page', () => {
 
     const drinkImage = screen.getByTestId('1-horizontal-image');
     const drinkTopText = screen.getByTestId('1-horizontal-top-text');
-    const drinkName = screen.getByTestId('1-horizontal-name');
+    const drinkName = screen.getByTestId(horizontalname1);
     const doneDate = screen.getByTestId('1-horizontal-done-date');
     const shareButton = screen.getByTestId('1-horizontal-share-btn');
 
@@ -86,7 +109,71 @@ describe('DoneRecipes Page', () => {
 
     // Test filter by meals
     fireEvent.click(screen.getByTestId('filter-by-meal-btn'));
-    expect(screen.queryByTestId('0-horizontal-name')).toHaveTextContent(doneRecipes[0].name);
-    expect(screen.queryByTestId('1-horizontal-name')).toBeNull();
+    expect(screen.queryByTestId(horizontalname0)).toHaveTextContent(doneRecipes[0].name);
+    expect(screen.queryByTestId(horizontalname1)).toBeNull();
+
+    // Test filter by all
+    fireEvent.click(screen.getByTestId('filter-by-all-btn'));
+    expect(screen.queryByTestId(horizontalname0)).toHaveTextContent(doneRecipes[0].name);
+    expect(screen.queryByTestId(horizontalname1)).toHaveTextContent(doneRecipes[1].name);
+  });
+
+  test('navigates to recipe details on image click', () => {
+    const { getByTestId } = render(
+      <MemoryRouter>
+        <DoneRecipes />
+      </MemoryRouter>,
+    );
+
+    const link = getByTestId('0-horizontal-image').closest('a');
+    expect(link).toHaveAttribute('href', '/meals/52771');
+  });
+
+  test('navigates to recipe details on name click', () => {
+    const { getByTestId } = render(
+      <MemoryRouter>
+        <DoneRecipes />
+      </MemoryRouter>,
+    );
+
+    const link = getByTestId(horizontalname1).closest('a');
+    expect(link).toHaveAttribute('href', '/drinks/178319');
+  });
+
+  test('shows copy message when link is copied', async () => {
+    const { getByTestId, getByText } = render(
+      <MemoryRouter>
+        <DoneRecipes />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(getByTestId('0-horizontal-share-btn'));
+    await waitFor(() => getByText('Link copied!'));
+
+    // Ensure message disappears after 3 seconds
+    await waitFor(() => expect(screen.queryByText('Link copied!')).toBeNull(), { timeout: 3500 });
+  });
+
+  test('filters done recipes correctly by drink', () => {
+    render(
+      <MemoryRouter>
+        <DoneRecipes />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByTestId('filter-by-drink-btn'));
+
+    const filteredDrinkRecipes = doneRecipes.filter((recipe) => recipe.type === 'drink');
+
+    filteredDrinkRecipes.forEach((recipe, index) => {
+      const drinkNameElement = screen.queryByTestId(`${index}-horizontal-name`);
+      expect(drinkNameElement).toBeInTheDocument();
+      expect(drinkNameElement).toHaveTextContent(recipe.name);
+    });
+
+    const mealNameElement = screen.queryByTestId(horizontalname0);
+    if (mealNameElement) {
+      expect(mealNameElement).not.toHaveTextContent(doneRecipes[0].name);
+    }
   });
 });
