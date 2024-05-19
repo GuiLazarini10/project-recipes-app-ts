@@ -1,3 +1,4 @@
+// src/Pages/RecipeInProgress.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import blackHeartIcon from '../images/blackHeartIcon.svg';
@@ -126,9 +127,13 @@ function RecipeInProgress() {
         <img src={ shareIcon } alt="Share" />
       </button>
       {copyMessage && <span>{copyMessage}</span>}
-      <button data-testid="favorite-btn" onClick={ handleFavorite }>
-        <img src={ isFavorite ? blackHeartIcon : whiteHeartIcon } alt="Favorite Icon" />
-      </button>
+      <input
+        type="image"
+        src={ isFavorite ? blackHeartIcon : whiteHeartIcon }
+        alt="Favorite Icon"
+        data-testid="favorite-btn"
+        onClick={ handleFavorite }
+      />
       <p data-testid="recipe-category">
         {isMeal ? recipe.strCategory : recipe.strAlcoholic}
       </p>
