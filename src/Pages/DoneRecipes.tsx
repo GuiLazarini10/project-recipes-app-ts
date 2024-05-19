@@ -13,7 +13,7 @@ interface DoneRecipe {
   tags: string[];
 }
 
-const DoneRecipes = () => {
+function DoneRecipes() {
   const [doneRecipes, setDoneRecipes] = useState<DoneRecipe[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<DoneRecipe[]>([]);
   const [filter, setFilter] = useState<string>('all');
@@ -35,7 +35,8 @@ const DoneRecipes = () => {
   };
 
   const handleShare = (id: string) => {
-    const url = `${window.location.origin}/${filter === 'meal' ? 'meals' : 'drinks'}/${id}`;
+    const url = `${window.location
+      .origin}/${filter === 'meal' ? 'meals' : 'drinks'}/${id}`;
     navigator.clipboard.writeText(url);
     setCopyMessage('Link copied!');
     setTimeout(() => setCopyMessage(''), 3000); // Clear message after 3 seconds
@@ -47,19 +48,19 @@ const DoneRecipes = () => {
       <div>
         <button
           data-testid="filter-by-all-btn"
-          onClick={() => handleFilterChange('all')}
+          onClick={ () => handleFilterChange('all') }
         >
           All
         </button>
         <button
           data-testid="filter-by-meal-btn"
-          onClick={() => handleFilterChange('meal')}
+          onClick={ () => handleFilterChange('meal') }
         >
           Meals
         </button>
         <button
           data-testid="filter-by-drink-btn"
-          onClick={() => handleFilterChange('drink')}
+          onClick={ () => handleFilterChange('drink') }
         >
           Drinks
         </button>
@@ -67,28 +68,28 @@ const DoneRecipes = () => {
       {copyMessage && <span>{copyMessage}</span>}
       <div>
         {filteredRecipes.map((recipe, index) => (
-          <div key={recipe.id}>
+          <div key={ recipe.id }>
             <img
-              src={recipe.image}
-              alt={recipe.name}
-              data-testid={`${index}-horizontal-image`}
+              src={ recipe.image }
+              alt={ recipe.name }
+              data-testid={ `${index}-horizontal-image` }
             />
-            <p data-testid={`${index}-horizontal-top-text`}>
+            <p data-testid={ `${index}-horizontal-top-text` }>
               {recipe.type === 'meal'
                 ? `${recipe.nationality} - ${recipe.category}`
                 : recipe.alcoholicOrNot}
             </p>
-            <p data-testid={`${index}-horizontal-name`}>{recipe.name}</p>
-            <p data-testid={`${index}-horizontal-done-date`}>{recipe.doneDate}</p>
+            <p data-testid={ `${index}-horizontal-name` }>{recipe.name}</p>
+            <p data-testid={ `${index}-horizontal-done-date` }>{recipe.doneDate}</p>
             <input
               type="image"
-              src={shareIcon}
+              src={ shareIcon }
               alt="Compartilhar"
-              data-testid={`${index}-horizontal-share-btn`}
-              onClick={() => handleShare(recipe.id)}
+              data-testid={ `${index}-horizontal-share-btn` }
+              onClick={ () => handleShare(recipe.id) }
             />
             {recipe.tags.slice(0, 2).map((tag) => (
-              <span key={tag} data-testid={`${index}-${tag}-horizontal-tag`}>
+              <span key={ tag } data-testid={ `${index}-${tag}-horizontal-tag` }>
                 {tag}
               </span>
             ))}
@@ -97,6 +98,6 @@ const DoneRecipes = () => {
       </div>
     </div>
   );
-};
+}
 
 export default DoneRecipes;

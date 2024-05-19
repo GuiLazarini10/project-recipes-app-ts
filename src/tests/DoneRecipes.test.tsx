@@ -40,7 +40,7 @@ describe('DoneRecipes Page', () => {
     render(
       <MemoryRouter>
         <DoneRecipes />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const drinkImage = screen.getByTestId('1-horizontal-image');
@@ -60,7 +60,7 @@ describe('DoneRecipes Page', () => {
     const { getByTestId } = render(
       <MemoryRouter>
         <DoneRecipes />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const mockClipboard = {
@@ -81,7 +81,7 @@ describe('DoneRecipes Page', () => {
     render(
       <MemoryRouter>
         <DoneRecipes />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     // Test filter by meals
