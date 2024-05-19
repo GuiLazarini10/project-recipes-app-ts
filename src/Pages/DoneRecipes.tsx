@@ -16,7 +16,6 @@ interface DoneRecipe {
 function DoneRecipes() {
   const [doneRecipes, setDoneRecipes] = useState<DoneRecipe[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<DoneRecipe[]>([]);
-  const [filter, setFilter] = useState<string>('all');
   const [copyMessage, setCopyMessage] = useState<string>('');
 
   useEffect(() => {
@@ -26,7 +25,6 @@ function DoneRecipes() {
   }, []);
 
   const handleFilterChange = (type: string) => {
-    setFilter(type);
     if (type === 'all') {
       setFilteredRecipes(doneRecipes);
     } else {
@@ -34,9 +32,9 @@ function DoneRecipes() {
     }
   };
 
-  const handleShare = (id: string) => {
+  const handleShare = (id: string, type: string) => {
     const url = `${window.location
-      .origin}/${filter === 'meal' ? 'meals' : 'drinks'}/${id}`;
+      .origin}/${type === 'meal' ? 'meals' : 'drinks'}/${id}`;
     navigator.clipboard.writeText(url);
     setCopyMessage('Link copied!');
     setTimeout(() => setCopyMessage(''), 3000); // Clear message after 3 seconds
@@ -86,7 +84,7 @@ function DoneRecipes() {
               src={ shareIcon }
               alt="Compartilhar"
               data-testid={ `${index}-horizontal-share-btn` }
-              onClick={ () => handleShare(recipe.id) }
+              onClick={ () => handleShare(recipe.id, recipe.type) }
             />
             {recipe.tags.slice(0, 2).map((tag) => (
               <span key={ tag } data-testid={ `${index}-${tag}-horizontal-tag` }>
