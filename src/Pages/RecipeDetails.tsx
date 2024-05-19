@@ -27,8 +27,7 @@ async function fetchById(type: string, id: string): Promise<any> {
 
 async function fetchRecommendation(isMeal: boolean): Promise<any> {
   const endpoint = isMeal
-    ? 'https://www.thecocktaildb.com/api/json/v1/1/search.php?s='
-    : 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
+    ? 'https://www.thecocktaildb.com/api/json/v1/1/search.php?s=' : 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
   try {
     const response = await fetch(endpoint);
     const data = await response.json();

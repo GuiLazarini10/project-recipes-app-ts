@@ -19,8 +19,7 @@ function RecommendationCarousel({ recommendations }: RecommendationCarouselProps
   const scroll = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
       const scrollAmount = direction === 'left'
-        ? -carouselRef.current.clientWidth / 2
-        : carouselRef.current.clientWidth / 2;
+        ? -carouselRef.current.clientWidth / 2 : carouselRef.current.clientWidth / 2;
       carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
