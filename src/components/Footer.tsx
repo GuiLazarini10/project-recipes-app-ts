@@ -14,6 +14,8 @@ function Footer(): JSX.Element {
         backgroundColor: '#fff',
         boxShadow: '0px -2px 10px rgba(0,0,0,0.1)',
         padding: '10px 0',
+        zIndex: 1000,
+        height: '60px',
       } }
     >
       <a href="/drinks">
