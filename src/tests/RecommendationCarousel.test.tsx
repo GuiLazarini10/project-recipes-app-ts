@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, test, expect, beforeAll } from 'vitest';
 import RecommendationCarousel from '../Pages/RecommendationCarousel';

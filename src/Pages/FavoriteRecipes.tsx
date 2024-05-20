@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import shareIcon from '../images/shareIcon.svg';
 import blackHeartIcon from '../images/blackHeartIcon.svg';
 
@@ -8,13 +9,16 @@ interface Recipe {
   name: string;
   image: string;
   category: string;
-  nationality?: string; // Alterado de area para nationality
+  nationality?: string;
   alcoholicOrNot?: string;
 }
+
+const LINK_COPIED_TEXT = 'Link copied!';
 
 function FavoriteRecipes() {
   const [favoriteRecipes, setFavoriteRecipes] = useState<Recipe[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
+  const [copySuccess, setCopySuccess] = useState<string>('');
 
   useEffect(() => {
     const storedFavoriteRecipes = localStorage.getItem('favoriteRecipes');
@@ -35,10 +39,16 @@ function FavoriteRecipes() {
     }
   };
 
-  const handleShare = (id: string) => {
-    const url = `${window.location.origin}/meals/${id}`;
-    navigator.clipboard.writeText(url);
-    alert('Link copied to clipboard!');
+  const handleShare = async (type: string, id: string) => {
+    try {
+      const url = `${window.location.origin}/${type === 'meal'
+        ? 'meals' : 'drinks'}/${id}`;
+      await navigator.clipboard.writeText(url);
+      setCopySuccess(LINK_COPIED_TEXT);
+      setTimeout(() => setCopySuccess(''), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
   };
 
   const handleUnfavorite = (id: string) => {
@@ -50,55 +60,62 @@ function FavoriteRecipes() {
 
   return (
     <div>
-      <button
-        data-testid="filter-by-all-btn"
-        onClick={ () => handleFilter('all') }
-      >
-        All
-      </button>
-      <button
-        data-testid="filter-by-meal-btn"
-        onClick={ () => handleFilter('meal') }
-      >
-        Meals
-      </button>
-      <button
-        data-testid="filter-by-drink-btn"
-        onClick={ () => handleFilter('drink') }
-      >
-        Drinks
-      </button>
+      <div>
+        <button
+          data-testid="filter-by-all-btn"
+          onClick={ () => handleFilter('all') }
+          style={ { marginRight: '10px' } }
+        >
+          All
+        </button>
+        <button
+          data-testid="filter-by-meal-btn"
+          onClick={ () => handleFilter('meal') }
+          style={ { marginRight: '10px' } }
+        >
+          Meals
+        </button>
+        <button
+          data-testid="filter-by-drink-btn"
+          onClick={ () => handleFilter('drink') }
+        >
+          Drinks
+        </button>
+      </div>
       <div>
         {filteredRecipes.map((recipe, index) => (
           <div key={ recipe.id }>
-            <img
-              src={ recipe.image }
-              alt={ recipe.name }
-              data-testid={ `${index}-horizontal-image` }
-            />
+            <Link
+              to={ `/${recipe.type === 'meal'
+                ? 'meals' : 'drinks'}/${recipe.id}` }
+            >
+              <img
+                src={ recipe.image }
+                alt={ recipe.name }
+                data-testid={ `${index}-horizontal-image` }
+                width={ 100 }
+              />
+              <p data-testid={ `${index}-horizontal-name` }>{recipe.name}</p>
+            </Link>
             <p data-testid={ `${index}-horizontal-top-text` }>
               {recipe.type === 'meal'
                 ? `${recipe.nationality} - ${recipe.category}` : recipe.alcoholicOrNot}
             </p>
-            <h3 data-testid={ `${index}-horizontal-name` }>{recipe.name}</h3>
-            <button
-              onClick={ () => handleShare(recipe.id) }
-            >
-              <img
-                data-testid={ `${index}-horizontal-share-btn` }
-                src={ shareIcon }
-                alt="Share"
-              />
-            </button>
-            <button
+            <input
+              type="image"
+              src={ shareIcon }
+              onClick={ () => handleShare(recipe.type, recipe.id) }
+              data-testid={ `${index}-horizontal-share-btn` }
+              alt="Share"
+            />
+            <input
+              type="image"
+              src={ blackHeartIcon }
               onClick={ () => handleUnfavorite(recipe.id) }
-            >
-              <img
-                data-testid={ `${index}-horizontal-favorite-btn` }
-                src={ blackHeartIcon }
-                alt="Unfavorite"
-              />
-            </button>
+              data-testid={ `${index}-horizontal-favorite-btn` }
+              alt="Unfavorite"
+            />
+            {copySuccess && <div>{copySuccess}</div>}
           </div>
         ))}
       </div>
