@@ -28,7 +28,7 @@ interface FavoriteRecipe {
   name: string;
   image: string;
 }
-//
+
 function DrinkDetails() {
   const { id } = useParams<{ id?: string }>();
   const location = useLocation();
@@ -43,8 +43,12 @@ function DrinkDetails() {
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
-      if (!id) return;
       try {
         const type = isMeal ? 'meals' : 'drinks';
         const data = await fetchById(type, id);
@@ -55,6 +59,7 @@ function DrinkDetails() {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [id, isMeal]);
 
@@ -110,16 +115,13 @@ function DrinkDetails() {
   const getFavoriteRecipes = (): FavoriteRecipe[] => {
     return JSON.parse(localStorage.getItem('favoriteRecipes') || '[]');
   };
-
   const saveFavoriteRecipes = (favorites: FavoriteRecipe[]) => {
     localStorage.setItem('favoriteRecipes', JSON.stringify(favorites));
   };
-
   const checkIfRecipeIsFavorited = (favorites:
   FavoriteRecipe[], recipeId: string): boolean => {
     return favorites.some((favorite) => favorite.id === recipeId);
   };
-
   const createFavoriteRecipe = (
     recipeId: string,
     recipeData: Recipe,
@@ -135,7 +137,6 @@ function DrinkDetails() {
       image: mealType ? recipeData.strMealThumb || '' : recipeData.strDrinkThumb || '',
     };
   };
-
   const handleFavoriteRecipe = () => {
     if (id && recipe) {
       const favorites = getFavoriteRecipes();
@@ -153,18 +154,15 @@ function DrinkDetails() {
       }
     }
   };
-
   useEffect(() => {
     if (id) {
       const favorites: FavoriteRecipe[] = getFavoriteRecipes();
       setIsFavorited(checkIfRecipeIsFavorited(favorites, id));
     }
   }, [id]);
-
   if (loading) {
     return <div>Loading...</div>;
   }
-
   let category;
   if (isMeal) {
     category = recipe?.strCategory;
@@ -173,9 +171,7 @@ function DrinkDetails() {
   } else {
     category = 'Non-alcoholic';
   }
-
   const favoriteIconSrc = isFavorited ? blackHeartIcon : whiteHeartIcon;
-
   return (
     <div>
       {recipe ? (
@@ -225,21 +221,30 @@ function DrinkDetails() {
       ) : (
         <div>Recipe not found</div>
       )}
-
       {!recipeAlreadyDone && (
         <button
           type="button"
-          style={ { position: 'fixed', bottom: '0', width: '100%', zIndex: '1000' } }
+          style={ {
+            position: 'fixed',
+            bottom: '0',
+            width: '100%',
+            height: '6%',
+            zIndex: '1001',
+            backgroundColor: '#ffc000',
+            color: 'white',
+            border: 'none',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            borderRadius: '5px',
+          } }
           data-testid="start-recipe-btn"
           onClick={ handleStartRecipe }
         >
           {recipeInProgress ? 'Continue Recipe' : 'Start Recipe'}
         </button>
       )}
-
       <RecommendationCarousel recommendations={ recommendations } />
     </div>
   );
 }
-
 export default DrinkDetails;
