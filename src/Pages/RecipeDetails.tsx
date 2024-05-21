@@ -43,10 +43,7 @@ function DrinkDetails() {
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
+    if (!id) return;
 
     const fetchData = async () => {
       try {
@@ -64,6 +61,8 @@ function DrinkDetails() {
   }, [id, isMeal]);
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchRecommendationData = async () => {
       try {
         const data = await fetchRecommendation(isMeal);
@@ -74,25 +73,25 @@ function DrinkDetails() {
     };
 
     fetchRecommendationData();
-  }, [isMeal]);
+  }, [id, isMeal]);
 
   useEffect(() => {
-    if (id) {
-      const doneRecipes = JSON.parse(localStorage.getItem('doneRecipes') || '[]');
-      const recipeIndex = doneRecipes
-        .findIndex((doneRecipe: Recipe) => doneRecipe.id === id);
-      setRecipeAlreadyDone(recipeIndex !== -1);
+    if (!id) return;
 
-      const inProgressRecipes = JSON
-        .parse(localStorage.getItem('inProgressRecipes') || '{}');
-      const inProgress = isMeal ? inProgressRecipes.meals && inProgressRecipes.meals[id]
-        : inProgressRecipes.drinks && inProgressRecipes.drinks[id];
-      setRecipeInProgress(!!inProgress);
+    const doneRecipes = JSON.parse(localStorage.getItem('doneRecipes') || '[]');
+    const recipeIndex = doneRecipes
+      .findIndex((doneRecipe: Recipe) => doneRecipe.id === id);
+    setRecipeAlreadyDone(recipeIndex !== -1);
 
-      const favorites: FavoriteRecipe[] = JSON
-        .parse(localStorage.getItem('favoriteRecipes') || '[]');
-      setIsFavorited(favorites.some((favorite) => favorite.id === id));
-    }
+    const inProgressRecipes = JSON
+      .parse(localStorage.getItem('inProgressRecipes') || '{}');
+    const inProgress = isMeal ? inProgressRecipes.meals && inProgressRecipes.meals[id]
+      : inProgressRecipes.drinks && inProgressRecipes.drinks[id];
+    setRecipeInProgress(!!inProgress);
+
+    const favorites: FavoriteRecipe[] = JSON
+      .parse(localStorage.getItem('favoriteRecipes') || '[]');
+    setIsFavorited(favorites.some((favorite) => favorite.id === id));
   }, [id, isMeal]);
 
   const handleStartRecipe = () => {
@@ -101,7 +100,6 @@ function DrinkDetails() {
       navigate(path);
     }
   };
-
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -111,7 +109,6 @@ function DrinkDetails() {
       console.error('Failed to copy:', err);
     }
   };
-
   const getFavoriteRecipes = (): FavoriteRecipe[] => {
     return JSON.parse(localStorage.getItem('favoriteRecipes') || '[]');
   };
@@ -160,6 +157,9 @@ function DrinkDetails() {
       setIsFavorited(checkIfRecipeIsFavorited(favorites, id));
     }
   }, [id]);
+  if (!id) {
+    return <div>Recipe not found</div>;
+  }
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -205,7 +205,7 @@ function DrinkDetails() {
                   -
                   {
                   recipe[`strMeasure${index + 1}` as keyof Recipe]
-}
+  }
                 </li>
               ))}
           </ul>

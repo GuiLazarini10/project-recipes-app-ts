@@ -1,16 +1,25 @@
+import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import DrinkDetails from '../Pages/DrinkDetails';
+import DrinkDetails from '../Pages/RecipeDetails';
 import { Recipe } from '../services/types';
+import * as api from '../services/api';
 import whiteHeartIcon from '../images/whiteHeartIcon.svg';
 import blackHeartIcon from '../images/blackHeartIcon.svg';
 
+vi.mock('../services/api');
+
+const MOCK_CATEGORY = 'Mock Category1';
+const MOCK_DRINK = 'Mock Drink';
+const MOCK_DRINK_THUMB = 'mock-drink-thumb.jpg';
+const DRINK_ROUTE = ['/drinks/54321'];
+
 const MOCK_RECIPE_MEAL: Recipe = {
-  id: '12345',
+  id: 'routerTest',
   strMeal: 'Mock Meal',
   strDrink: '',
-  strCategory: 'Mock Category1',
+  strCategory: MOCK_CATEGORY,
   strAlcoholic: '',
   strMealThumb: 'mock-meal-thumb.jpg',
   strDrinkThumb: '',
@@ -18,16 +27,17 @@ const MOCK_RECIPE_MEAL: Recipe = {
   strYoutube: 'https://www.youtube.com/watch?v=mockyoutube',
   strIngredient1: 'Ingredient 1',
   strMeasure1: '1 cup',
+  strArea: 'Mock Area',
 };
 
 const MOCK_RECIPE_DRINK_ALCOHOLIC: Recipe = {
   id: '54321',
   strMeal: '',
-  strDrink: 'Mock Drink',
+  strDrink: MOCK_DRINK,
   strCategory: '',
   strAlcoholic: 'Alcoholic',
   strMealThumb: '',
-  strDrinkThumb: 'mock-drink-thumb.jpg',
+  strDrinkThumb: MOCK_DRINK_THUMB,
   strInstructions: 'Mock instructions for drink',
   strYoutube: 'https://www.youtube.com/watch?v=mockdrinkyoutube',
   strIngredient1: 'Drink Ingredient 1',
@@ -37,11 +47,11 @@ const MOCK_RECIPE_DRINK_ALCOHOLIC: Recipe = {
 const MOCK_RECIPE_DRINK_NON_ALCOHOLIC: Recipe = {
   id: '98765',
   strMeal: '',
-  strDrink: 'Mock Drink',
+  strDrink: MOCK_DRINK,
   strCategory: '',
   strAlcoholic: '',
   strMealThumb: '',
-  strDrinkThumb: 'mock-drink-thumb.jpg',
+  strDrinkThumb: MOCK_DRINK_THUMB,
   strInstructions: 'Mock instructions for drink',
   strYoutube: 'https://www.youtube.com/watch?v=mockdrinkyoutube',
   strIngredient1: 'Drink Ingredient 1',
@@ -80,37 +90,25 @@ const TEST_IDS = {
 };
 
 const LOADING_TEXT = 'Loading...';
+const IN_PROGRESS_TEXT = 'In Progress';
 const CONTINUE_RECIPE_TEXT = 'Continue Recipe';
 const MOCK_MEAL_TITLE = MOCK_RECIPE_MEAL.strMeal ?? '';
 
-function mockResponse(data: any) {
-  return {
-    ok: true,
-    status: 200,
-    json: async () => data,
-  } as Response;
-}
-
 beforeEach(() => {
   vi.resetAllMocks();
-  global.fetch = vi.fn((url) => {
-    if (typeof url === 'string' && url.includes('lookup.php')) {
-      if (url.includes('12345')) {
-        return Promise.resolve(mockResponse({ meals: [MOCK_RECIPE_MEAL], drinks: [] }));
-      }
-      if (url.includes('54321')) {
-        return Promise.resolve(mockResponse({ meals: [], drinks: [MOCK_RECIPE_DRINK_ALCOHOLIC] }));
-      }
-      if (url.includes('98765')) {
-        return Promise.resolve(mockResponse({ meals: [], drinks: [MOCK_RECIPE_DRINK_NON_ALCOHOLIC] }));
-      }
+  vi.spyOn(api, 'fetchById').mockImplementation((type: string, id: string) => {
+    if (type === 'meals' && id === 'routerTest') {
+      return Promise.resolve([MOCK_RECIPE_MEAL]);
     }
-    if (typeof url === 'string' && url.includes('search.php')) {
-      return Promise.resolve(mockResponse({ meals: MOCK_RECOMMENDATIONS, drinks: MOCK_RECOMMENDATIONS }));
+    if (type === 'drinks' && id === '54321') {
+      return Promise.resolve([MOCK_RECIPE_DRINK_ALCOHOLIC]);
+    }
+    if (type === 'drinks' && id === '98765') {
+      return Promise.resolve([MOCK_RECIPE_DRINK_NON_ALCOHOLIC]);
     }
     return Promise.reject(new Error('not found'));
   });
-
+  vi.spyOn(api, 'fetchRecommendation').mockResolvedValue(MOCK_RECOMMENDATIONS);
   localStorage.clear();
 });
 
@@ -121,23 +119,23 @@ const renderWithRouter = (id?: string) => {
       <Routes>
         <Route path="/meals/:id" element={ <DrinkDetails /> } />
         <Route path="/drinks/:id" element={ <DrinkDetails /> } />
-        <Route path="/meals/:id/in-progress" element={ <div>In Progress</div> } />
-        <Route path="/drinks/:id/in-progress" element={ <div>In Progress</div> } />
+        <Route path="/meals/:id/in-progress" element={ <div>{IN_PROGRESS_TEXT}</div> } />
+        <Route path="/drinks/:id/in-progress" element={ <div>{IN_PROGRESS_TEXT}</div> } />
       </Routes>
     </MemoryRouter>,
   );
 };
 
 const testLoadingState = () => {
-  it('should render loading state initially', () => {
-    renderWithRouter('12345');
+  it('renderizar o estado de carregamento inicialmente', () => {
+    renderWithRouter('routerTest');
     expect(screen.getByText(LOADING_TEXT)).toBeInTheDocument();
   });
 };
 
 const testRecipeDetailsAfterFetching = () => {
-  it('should render the recipe details after fetching data', async () => {
-    renderWithRouter('12345');
+  it('renderizar os detalhes da receita após buscar os dados', async () => {
+    renderWithRouter('routerTest');
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeTitle)).toHaveTextContent(MOCK_MEAL_TITLE));
     expect(screen.getByTestId(TEST_IDS.recipePhoto)).toHaveAttribute('src', MOCK_RECIPE_MEAL.strMealThumb ?? '');
     expect(screen.getByTestId(TEST_IDS.recipeCategory)).toHaveTextContent(MOCK_RECIPE_MEAL.strCategory ?? '');
@@ -145,9 +143,47 @@ const testRecipeDetailsAfterFetching = () => {
   });
 };
 
+const testFetchRecipeDetailsEffect = () => {
+  it('busca detalhes da receita e definir o estado corretamente', async () => {
+    renderWithRouter('routerTest');
+
+    expect(screen.getByText(LOADING_TEXT)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByTestId(TEST_IDS.recipeTitle)).toHaveTextContent(MOCK_RECIPE_MEAL.strMeal ?? '');
+      expect(screen.getByTestId(TEST_IDS.recipePhoto)).toHaveAttribute('src', MOCK_RECIPE_MEAL.strMealThumb ?? '');
+      expect(screen.getByTestId(TEST_IDS.recipeCategory)).toHaveTextContent(MOCK_RECIPE_MEAL.strCategory ?? '');
+      expect(screen.getByTestId(TEST_IDS.instructions)).toHaveTextContent(MOCK_RECIPE_MEAL.strInstructions ?? '');
+
+      expect(screen.queryByText(LOADING_TEXT)).not.toBeInTheDocument();
+    });
+    expect(api.fetchById).toHaveBeenCalledWith('meals', 'routerTest');
+  });
+
+  it('lida com erro na busca e definir o estado de carregamento corretamente', async () => {
+    vi.spyOn(api, 'fetchById').mockRejectedValue(new Error('Failed to fetch'));
+
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    renderWithRouter('routerTest');
+
+    expect(screen.getByText(LOADING_TEXT)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith('Error fetching recipe details:', expect.any(Error));
+
+      expect(screen.queryByText(LOADING_TEXT)).not.toBeInTheDocument();
+
+      expect(screen.getByText(TEST_IDS.recipeNotFoundText)).toBeInTheDocument();
+    });
+
+    consoleSpy.mockRestore();
+  });
+};
+
 const testRecommendationCarousel = () => {
-  it('should render recommendation carousel after fetching recommendations', async () => {
-    renderWithRouter('12345');
+  it('renderiza o carrossel de recomendações após buscar as recomendações', async () => {
+    renderWithRouter('routerTest');
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.recommendationCard(0))).toBeInTheDocument());
     MOCK_RECOMMENDATIONS.forEach((rec, index) => {
       expect(screen.getByTestId(TEST_IDS.recommendationCard(index))).toBeInTheDocument();
@@ -156,9 +192,27 @@ const testRecommendationCarousel = () => {
   });
 };
 
+const testErrorFetchingRecommendation = () => {
+  it('lida com erro ao buscar recomendações', async () => {
+    vi.spyOn(api, 'fetchRecommendation').mockRejectedValue(new Error('Failed to fetch recommendations'));
+
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    renderWithRouter('routerTest');
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith('Error fetching recommendation:', expect.any(Error));
+
+      expect(screen.queryByTestId(TEST_IDS.recommendationCard(0))).not.toBeInTheDocument();
+    });
+
+    consoleSpy.mockRestore();
+  });
+};
+
 const testFavoriteButtonClick = () => {
-  it('should handle favorite button click', async () => {
-    renderWithRouter('12345');
+  it('lida com clique no botão de favorito', async () => {
+    renderWithRouter('routerTest');
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeTitle)).toHaveTextContent(MOCK_MEAL_TITLE));
 
     expect(screen.getByTestId(TEST_IDS.favoriteBtn)).toHaveAttribute('src', whiteHeartIcon);
@@ -173,28 +227,28 @@ const testFavoriteButtonClick = () => {
     expect(favorites[0]).toEqual({
       id: MOCK_RECIPE_MEAL.id,
       type: 'meal',
-      nationality: '',
-      category: MOCK_RECIPE_MEAL.strCategory,
+      nationality: MOCK_RECIPE_MEAL.strArea || '',
+      category: MOCK_RECIPE_MEAL.strCategory || '',
       alcoholicOrNot: '',
-      name: MOCK_RECIPE_MEAL.strMeal,
-      image: MOCK_RECIPE_MEAL.strMealThumb,
+      name: MOCK_RECIPE_MEAL.strMeal || '',
+      image: MOCK_RECIPE_MEAL.strMealThumb || '',
     });
   });
 };
 
 const testUnfavoriteButtonClick = () => {
-  it('should handle unfavorite button click', async () => {
+  it('lida com clique no botão de desfavoritar', async () => {
     localStorage.setItem('favoriteRecipes', JSON.stringify([{
       id: MOCK_RECIPE_MEAL.id,
       type: 'meal',
-      nationality: '',
-      category: MOCK_RECIPE_MEAL.strCategory,
+      nationality: MOCK_RECIPE_MEAL.strArea || '',
+      category: MOCK_RECIPE_MEAL.strCategory || '',
       alcoholicOrNot: '',
-      name: MOCK_RECIPE_MEAL.strMeal,
-      image: MOCK_RECIPE_MEAL.strMealThumb,
+      name: MOCK_RECIPE_MEAL.strMeal || '',
+      image: MOCK_RECIPE_MEAL.strMealThumb || '',
     }]));
 
-    renderWithRouter('12345');
+    renderWithRouter('routerTest');
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeTitle)).toHaveTextContent(MOCK_MEAL_TITLE));
 
     expect(screen.getByTestId(TEST_IDS.favoriteBtn)).toHaveAttribute('src', blackHeartIcon);
@@ -209,20 +263,20 @@ const testUnfavoriteButtonClick = () => {
 };
 
 const testStartRecipeButtonClick = () => {
-  it('should handle start recipe button click', async () => {
+  it('lida com clique no botão de começar receita', async () => {
     localStorage.setItem('doneRecipes', JSON.stringify([]));
-    localStorage.setItem('inProgressRecipes', JSON.stringify({ meals: { 12345: [] } }));
-    renderWithRouter('12345');
+    localStorage.setItem('inProgressRecipes', JSON.stringify({ meals: { routerTest: [] } }));
+    renderWithRouter('routerTest');
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeTitle)).toHaveTextContent(MOCK_MEAL_TITLE));
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.startRecipeBtn)).toBeInTheDocument(), { timeout: 2000 });
     fireEvent.click(screen.getByTestId(TEST_IDS.startRecipeBtn));
-    await waitFor(() => expect(screen.getByText('In Progress')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(IN_PROGRESS_TEXT)).toBeInTheDocument());
   });
 };
 
 const testIngredientsList = () => {
-  it('should render the recipe ingredients list', async () => {
-    renderWithRouter('12345');
+  it('renderiza a lista de ingredientes da receita', async () => {
+    renderWithRouter('routerTest');
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeTitle)).toHaveTextContent(MOCK_MEAL_TITLE));
     const ingredientText = screen.getByTestId(TEST_IDS.ingredientNameAndMeasure(0)).textContent;
     expect(ingredientText).toMatch(/Ingredient 1\s*-\s*1 cup/);
@@ -230,16 +284,16 @@ const testIngredientsList = () => {
 };
 
 const testRecipeNotFound = () => {
-  it('should render recipe not found when recipe is not found', async () => {
-    global.fetch = vi.fn(() => Promise.resolve(mockResponse({ meals: [], drinks: [] })));
-    renderWithRouter('12345');
+  it('renderiza "Recipe not found" quando a receita não for encontrada', async () => {
+    vi.spyOn(api, 'fetchById').mockResolvedValue([]);
+    renderWithRouter('routerTest');
     await waitFor(() => expect(screen.getByText(TEST_IDS.recipeNotFoundText)).toBeInTheDocument());
   });
 };
 
 const testShareButtonClick = () => {
-  it('should handle share button click', async () => {
-    renderWithRouter('12345');
+  it('lida com clique no botão de compartilhar', async () => {
+    renderWithRouter('routerTest');
     Object.assign(navigator, {
       clipboard: {
         writeText: vi.fn().mockResolvedValue(undefined),
@@ -252,9 +306,9 @@ const testShareButtonClick = () => {
 };
 
 const testShareButtonError = () => {
-  it('should log error when share button click fails', async () => {
+  it('registra erro quando o clique no botão de compartilhar falhar', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    renderWithRouter('12345');
+    renderWithRouter('routerTest');
     Object.assign(navigator, {
       clipboard: {
         writeText: vi.fn().mockRejectedValue(new Error('Failed to copy')),
@@ -268,19 +322,19 @@ const testShareButtonError = () => {
 };
 
 const testContinueRecipeButton = () => {
-  it('should render continue recipe button when recipe is in progress', async () => {
-    localStorage.setItem('inProgressRecipes', JSON.stringify({ meals: { 12345: [] } }));
-    renderWithRouter('12345');
+  it('renderiza botão "Continue Recipe" quando a receita estiver em andamento', async () => {
+    localStorage.setItem('inProgressRecipes', JSON.stringify({ meals: { routerTest: [] } }));
+    renderWithRouter('routerTest');
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeTitle)).toHaveTextContent(MOCK_MEAL_TITLE));
     expect(screen.getByTestId(TEST_IDS.startRecipeBtn)).toHaveTextContent(CONTINUE_RECIPE_TEXT);
   });
 };
 
 const testErrorFetchingRecipeDetails = () => {
-  it('should handle error fetching recipe details', async () => {
+  it('lida com erro ao buscar detalhes da receita', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    global.fetch = vi.fn(() => Promise.reject(new Error('Failed to fetch')));
-    renderWithRouter('12345');
+    vi.spyOn(api, 'fetchById').mockRejectedValue(new Error('Failed to fetch'));
+    renderWithRouter('routerTest');
     await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith('Error fetching recipe details:', expect.any(Error)));
     expect(screen.queryByText(LOADING_TEXT)).not.toBeInTheDocument();
     expect(screen.queryByTestId(TEST_IDS.recipeTitle)).not.toBeInTheDocument();
@@ -289,14 +343,14 @@ const testErrorFetchingRecipeDetails = () => {
 };
 
 const testCategoryDisplay = () => {
-  it('should display the correct category for a meal', async () => {
-    renderWithRouter('12345');
-    await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeCategory)).toHaveTextContent('Mock Category1'));
+  it('exibi a categoria correta para uma refeição', async () => {
+    renderWithRouter('routerTest');
+    await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeCategory)).toHaveTextContent(MOCK_CATEGORY));
   });
 
-  it('should display the correct category for an alcoholic drink', async () => {
+  it('exibi a categoria correta para uma bebida alcoólica', async () => {
     render(
-      <MemoryRouter initialEntries={ ['/drinks/54321'] }>
+      <MemoryRouter initialEntries={ DRINK_ROUTE }>
         <Routes>
           <Route path="/drinks/:id" element={ <DrinkDetails /> } />
         </Routes>
@@ -305,7 +359,7 @@ const testCategoryDisplay = () => {
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeCategory)).toHaveTextContent('Alcoholic: Alcoholic'));
   });
 
-  it('should display the correct category for a non-alcoholic drink', async () => {
+  it('exibi a categoria correta para uma bebida não alcoólica', async () => {
     render(
       <MemoryRouter initialEntries={ ['/drinks/98765'] }>
         <Routes>
@@ -318,16 +372,16 @@ const testCategoryDisplay = () => {
 };
 
 const testRecipeInProgress = () => {
-  it('should set recipe in progress state for meals correctly', async () => {
-    localStorage.setItem('inProgressRecipes', JSON.stringify({ meals: { 12345: [] } }));
-    renderWithRouter('12345');
+  it('defini o estado de receita em progresso para refeições corretamente', async () => {
+    localStorage.setItem('inProgressRecipes', JSON.stringify({ meals: { routerTest: [] } }));
+    renderWithRouter('routerTest');
     await waitFor(() => expect(screen.getByTestId(TEST_IDS.startRecipeBtn)).toHaveTextContent(CONTINUE_RECIPE_TEXT));
   });
 
-  it('should set recipe in progress state for drinks correctly', async () => {
+  it('defini o estado de receita em progresso para bebidas corretamente', async () => {
     localStorage.setItem('inProgressRecipes', JSON.stringify({ drinks: { 54321: [] } }));
     render(
-      <MemoryRouter initialEntries={ ['/drinks/54321'] }>
+      <MemoryRouter initialEntries={ DRINK_ROUTE }>
         <Routes>
           <Route path="/drinks/:id" element={ <DrinkDetails /> } />
         </Routes>
@@ -338,16 +392,25 @@ const testRecipeInProgress = () => {
 };
 
 const testNoId = () => {
-  it('should not fetch data if no id is present', async () => {
-    renderWithRouter();
-    expect(screen.queryByText(LOADING_TEXT)).not.toBeInTheDocument();
-    expect(global.fetch).not.toHaveBeenCalled();
+  it('não busca dados se não houver id presente', async () => {
+    render(
+      <MemoryRouter initialEntries={ ['/meals'] }>
+        <Routes>
+          <Route path="/meals" element={ <DrinkDetails /> } />
+        </Routes>
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.queryByText(LOADING_TEXT)).not.toBeInTheDocument();
+    });
+    expect(api.fetchById).not.toHaveBeenCalled();
   });
 };
 
-describe('DrinkDetails Component', () => {
+describe('Componente DrinkDetails', () => {
   testLoadingState();
   testRecipeDetailsAfterFetching();
+  testFetchRecipeDetailsEffect();
   testRecommendationCarousel();
   testFavoriteButtonClick();
   testUnfavoriteButtonClick();
@@ -361,4 +424,84 @@ describe('DrinkDetails Component', () => {
   testCategoryDisplay();
   testRecipeInProgress();
   testNoId();
+  testErrorFetchingRecommendation();
+
+  it('lida com dados da receita corretamente para uma refeição', async () => {
+    renderWithRouter('routerTest');
+    await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeTitle)).toHaveTextContent('Mock Meal'));
+
+    const recipeData = MOCK_RECIPE_MEAL;
+    const mealType = true;
+
+    const expectedData = {
+      type: mealType ? 'meal' : 'drink',
+      nationality: mealType ? recipeData.strArea || '' : '',
+      category: recipeData.strCategory || '',
+      alcoholicOrNot: mealType ? '' : recipeData.strAlcoholic || '',
+      name: mealType ? recipeData.strMeal || '' : recipeData.strDrink || '',
+      image: mealType ? recipeData.strMealThumb || '' : recipeData.strDrinkThumb || '',
+    };
+
+    expect(expectedData).toEqual({
+      type: 'meal',
+      nationality: 'Mock Area',
+      category: MOCK_CATEGORY,
+      alcoholicOrNot: '',
+      name: 'Mock Meal',
+      image: 'mock-meal-thumb.jpg',
+    });
+  });
+
+  it('lida com dados da receita corretamente para uma bebida alcoólica', async () => {
+    render(
+      <MemoryRouter initialEntries={ DRINK_ROUTE }>
+        <Routes>
+          <Route path="/drinks/:id" element={ <DrinkDetails /> } />
+        </Routes>
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByTestId(TEST_IDS.recipeTitle)).toHaveTextContent(MOCK_DRINK));
+
+    const recipeData = MOCK_RECIPE_DRINK_ALCOHOLIC;
+    const mealType = false;
+
+    const expectedData = {
+      type: mealType ? 'meal' : 'drink',
+      nationality: mealType ? recipeData.strArea || '' : '',
+      category: recipeData.strCategory || '',
+      alcoholicOrNot: mealType ? '' : recipeData.strAlcoholic || '',
+      name: mealType ? recipeData.strMeal || '' : recipeData.strDrink || '',
+      image: mealType ? recipeData.strMealThumb || '' : recipeData.strDrinkThumb || '',
+    };
+
+    expect(expectedData).toEqual({
+      type: 'drink',
+      nationality: '',
+      category: '',
+      alcoholicOrNot: 'Alcoholic',
+      name: MOCK_DRINK,
+      image: MOCK_DRINK_THUMB,
+    });
+  });
+
+  it('navegar para o caminho correto ao clicar no botão de começar receita para uma refeição', async () => {
+    renderWithRouter('routerTest');
+    await waitFor(() => expect(screen.getByTestId(TEST_IDS.startRecipeBtn)).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId(TEST_IDS.startRecipeBtn));
+    await waitFor(() => expect(screen.getByText(IN_PROGRESS_TEXT)).toBeInTheDocument());
+  });
+
+  it('navegar para o caminho correto ao clicar no botão de começar receita para uma bebida', async () => {
+    render(
+      <MemoryRouter initialEntries={ DRINK_ROUTE }>
+        <Routes>
+          <Route path="/drinks/:id" element={ <DrinkDetails /> } />
+          <Route path="/drinks/:id/in-progress" element={ <div>{IN_PROGRESS_TEXT}</div> } />
+        </Routes>
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByTestId(TEST_IDS.startRecipeBtn)).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId(TEST_IDS.startRecipeBtn));
+    await waitFor(() => expect(screen.getByText(IN_PROGRESS_TEXT)).toBeInTheDocument());
+  });
 });
